@@ -1,6 +1,7 @@
 require "bit_counter/version"
-require "bit_counter/bit_counter"
 
-module BitCounter
-  # Your code goes here...
+if RUBY_PLATFORM =~ /java/
+  require 'bit_counter/jruby'
+else
+  require "bit_counter/bit_counter"
 end

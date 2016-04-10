@@ -3,12 +3,16 @@ require "rspec/core/rake_task"
 
 RSpec::Core::RakeTask.new(:spec)
 
-require "rake/extensiontask"
+if RUBY_PLATFORM =~ /java/
+  task :default => [:spec]
+else
+  require "rake/extensiontask"
 
-task :build => :compile
+  task :build => :compile
 
-Rake::ExtensionTask.new("bit_counter") do |ext|
-  ext.lib_dir = "lib/bit_counter"
+  Rake::ExtensionTask.new("bit_counter") do |ext|
+    ext.lib_dir = "lib/bit_counter"
+  end
+
+  task :default => [:clobber, :compile, :spec]
 end
-
-task :default => [:clobber, :compile, :spec]
