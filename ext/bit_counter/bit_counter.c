@@ -79,15 +79,14 @@ Init_bit_counter(void)
   rb_mBitCounter = rb_define_module("BitCounter");
   rb_mCImpl = rb_define_module_under(rb_mBitCounter, "CImpl");
   have_cpu_popcnt = bitcounter_cimpl_cpu_popcnt_p(rb_mCImpl);
-  rb_define_module_function(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum, 1);
   rb_define_module_function(rb_mCImpl, "cpu_popcnt?", bitcounter_cimpl_cpu_popcnt_p, 0);
 #ifdef HAVE_POPCNT_GCC_ASM
   if(have_cpu_popcnt){
-      rb_define_module_function(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum_asm, 1);
+      rb_define_method(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum_asm, 1);
   }else{
-      rb_define_module_function(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum, 1);
+      rb_define_method(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum, 1);
   }
 #else
-  rb_define_module_function(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum, 1);
+  rb_define_method(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum, 1);
 #endif
 }
