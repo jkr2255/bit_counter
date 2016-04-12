@@ -10,9 +10,6 @@ module BitCounter
   # @note not intended for direct use.
   #
   module JavaImpl
-
-    module_function
-
     def count_fixnum(num)
       raise TypeError unless num.is_a?(::Fixnum)
       count = Java::JavaLang::Long.bitCount(num)
@@ -26,6 +23,8 @@ module BitCounter
     end
   end
 
+  extend JavaImpl
+
   module_function
 
   #
@@ -38,9 +37,9 @@ module BitCounter
   def count(num)
     case num
     when Fixnum
-      JavaImpl.count_fixnum(num)
+      count_fixnum(num)
     when Bignum
-      JavaImpl.count_bignum(num)
+      count_bignum(num)
     else
       raise TypeError
     end
