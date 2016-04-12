@@ -4,4 +4,8 @@
 #include "ruby.h"
 #include <limits.h>
 
+#ifdef HAVE_CPUID_H
+#include <cpuid.h>
+#endif
+
 #endif /* BIT_COUNTER_H */
