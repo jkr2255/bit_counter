@@ -13,3 +13,4 @@
 *.a
 mkmf.log
 /vendor/
+/ext/bit_counter/Makefile
