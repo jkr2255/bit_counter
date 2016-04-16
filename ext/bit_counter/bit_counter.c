@@ -2,52 +2,12 @@
 
 VALUE rb_mBitCounter;
 
-#ifdef HAVE___BUILTIN_POPCOUNTL
 static VALUE bitcounter_cimpl_count_fixnum(VALUE self, VALUE num){
     long l_num = NUM2LONG(num);
-    int val = __builtin_popcountl(l_num);
+    int val = POPCOUNTL(l_num);
     if(l_num < 0) val -= sizeof(long) * CHAR_BIT;
     return INT2FIX(val);
 }
-#elif SIZEOF_LONG == 8
-static VALUE bitcounter_cimpl_count_fixnum(VALUE self, VALUE num){
-    long l_num = NUM2LONG(num);
-    unsigned long x = l_num;
-    x = ((x & 0xaaaaaaaaaaaaaaaaUL) >> 1)
-      +  (x & 0x5555555555555555UL);
-    x = ((x & 0xccccccccccccccccUL) >> 2)
-      +  (x & 0x3333333333333333UL);
-    x = ((x & 0xf0f0f0f0f0f0f0f0UL) >> 4)
-      +  (x & 0x0f0f0f0f0f0f0f0fUL);
-    x = ((x & 0xff00ff00ff00ff00UL) >> 8)
-      +  (x & 0x00ff00ff00ff00ffUL);
-    x = ((x & 0xffff0000ffff0000UL) >> 16)
-      +  (x & 0x0000ffff0000ffffUL);
-    x = ((x & 0xffffffff00000000UL) >> 32)
-      +  (x & 0x00000000ffffffffUL);
-    if(l_num < 0) x -= sizeof(long) * CHAR_BIT;
-    return LONG2FIX(x);
-}
-#elif SIZEOF_LONG == 4
-static VALUE bitcounter_cimpl_count_fixnum(VALUE self, VALUE num){
-    long l_num = NUM2LONG(num);
-    unsigned long x = l_num;
-    x = ((x & 0xaaaaaaaaUL) >> 1)
-      +  (x & 0x55555555UL);
-    x = ((x & 0xccccccccUL) >> 2)
-      +  (x & 0x33333333UL);
-    x = ((x & 0xf0f0f0f0UL) >> 4)
-      +  (x & 0x0f0f0f0fUL);
-    x = ((x & 0xff00ff00UL) >> 8)
-      +  (x & 0x00ff00ffUL);
-    x = ((x & 0xffff0000UL) >> 16)
-      +  (x & 0x0000ffffUL);
-    if(l_num < 0) x -= sizeof(long) * CHAR_BIT;
-    return LONG2FIX(x);
-}
-#else
-#error Unsupported architecture
-#endif
 
 #ifdef HAVE___GET_CPUID
 static VALUE bitcounter_cimpl_cpu_popcnt_p(VALUE self){
