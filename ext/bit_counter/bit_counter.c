@@ -38,6 +38,43 @@ static VALUE bitcounter_cimpl_count_fixnum_asm(VALUE self, VALUE num){
 #define ASM_POPCOUNT 0
 #endif
 
+/*  for bignum */
+
+#ifdef HAVE_RB_ABSINT_NUMWORDS
+/* Ruby >= 2.1 */
+static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
+    int negated = 0;
+    unsigned long * packed;
+    size_t words, i;
+    LONG_LONG ret = 0;
+    if(FIXNUM_P(num)){
+        return bitcounter_cimpl_count_fixnum(self, num);
+    }
+    Check_Type(num, T_BIGNUM);
+    negated = (rb_big_cmp(num, INT2FIX(0)) == INT2FIX(-1));
+    words = rb_absint_numwords(num, sizeof(unsigned long), NULL);
+    packed = ALLOC_N(unsigned long, words);
+    rb_big_pack(num, packed, words);
+    for(i = 0; i < words; ++i){
+        ret += POPCOUNTL(packed[i]);
+    }
+    if(negated){
+        ret -= words * sizeof(unsigned long) * CHAR_BIT;
+    }
+    return LL2NUM(ret);
+}
+#else
+static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
+    /* stub function */
+    if(FIXNUM_P(num)){
+        return bitcounter_cimpl_count_fixnum(self, num);
+    }
+    Check_Type(num, T_BIGNUM);
+
+    return Qnil;
+}
+#endif
+
 void
 Init_bit_counter(void)
 {
@@ -52,4 +89,5 @@ Init_bit_counter(void)
   }else{
       rb_define_method(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum, 1);
   }
+  rb_define_method(rb_mCImpl, "test", bitcounter_cimpl_count_bignum, 1);
 }
