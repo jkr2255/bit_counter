@@ -29,6 +29,13 @@ static VALUE bitcounter_cimpl_count_fixnum_asm(VALUE self, VALUE num){
     if(l_num < 0) val -= sizeof(long) * CHAR_BIT;
     return INT2FIX(val);
 }
+#define ASM_POPCOUNT 1
+#else
+static VALUE bitcounter_cimpl_count_fixnum_asm(VALUE self, VALUE num){
+    /* dummy function for C compiler, never called from Ruby */
+    return Qnil;
+}
+#define ASM_POPCOUNT 0
 #endif
 
 void
@@ -40,13 +47,9 @@ Init_bit_counter(void)
   rb_mCImpl = rb_define_module_under(rb_mBitCounter, "CImpl");
   have_cpu_popcnt = bitcounter_cimpl_cpu_popcnt_p(rb_mCImpl);
   rb_define_module_function(rb_mCImpl, "cpu_popcnt?", bitcounter_cimpl_cpu_popcnt_p, 0);
-#ifdef HAVE_POPCNT_GCC_ASM
-  if(have_cpu_popcnt){
+  if(ASM_POPCOUNT && have_cpu_popcnt){
       rb_define_method(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum_asm, 1);
   }else{
       rb_define_method(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum, 1);
   }
-#else
-  rb_define_method(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum, 1);
-#endif
 }
