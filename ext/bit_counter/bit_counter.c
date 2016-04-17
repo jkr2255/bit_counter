@@ -61,6 +61,7 @@ static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
     if(negated){
         ret -= words * sizeof(unsigned long) * CHAR_BIT;
     }
+    xfree(packed);
     return LL2NUM(ret);
 }
 #else
