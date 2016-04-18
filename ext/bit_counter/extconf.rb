@@ -3,6 +3,7 @@ require "mkmf"
 have_func('__builtin_popcountl(1)')
 have_func('__builtin_popcountll(1)')
 have_func('rb_absint_numwords')
+have_func('rb_big_pack')
 have_header('cpuid.h') && have_func('__get_cpuid', 'cpuid.h')
 check_sizeof('long')
 check_sizeof('long long')

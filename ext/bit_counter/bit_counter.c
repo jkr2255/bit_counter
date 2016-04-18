@@ -40,8 +40,7 @@ static VALUE bitcounter_cimpl_count_fixnum_asm(VALUE self, VALUE num){
 
 /*  for bignum */
 
-#ifdef HAVE_RB_ABSINT_NUMWORDS
-/* Ruby >= 2.1 */
+#ifdef HAVE_RB_BIG_PACK
 static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
     int negated = 0;
     unsigned long * packed;
@@ -51,8 +50,8 @@ static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
         return bitcounter_cimpl_count_fixnum(self, num);
     }
     Check_Type(num, T_BIGNUM);
-    negated = (rb_big_cmp(num, INT2FIX(0)) == INT2FIX(-1));
-    words = rb_absint_numwords(num, sizeof(unsigned long), NULL);
+    negated = RBIGNUM_NEGATIVE_P(num);
+    words = BIGNUM_IN_ULONG(num);
     packed = ALLOC_N(unsigned long, words);
     rb_big_pack(num, packed, words);
     for(i = 0; i < words; ++i){
