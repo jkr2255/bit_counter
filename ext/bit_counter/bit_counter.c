@@ -65,13 +65,36 @@ static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
 }
 #else
 static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
-    /* stub function */
+    /* as a last resort, using Array#pack */
+    int negated = 0;
+    VALUE abs_num, arr, packed;
+    unsigned char * p;
+    long length, i;
+    LONG_LONG ret = 0;
+    static ID id_pack = 0;
     if(FIXNUM_P(num)){
         return bitcounter_cimpl_count_fixnum(self, num);
     }
     Check_Type(num, T_BIGNUM);
-
-    return Qnil;
+    if(!id_pack){
+        id_pack = rb_intern("pack");
+    }
+    if(RBIGNUM_NEGATIVE_P(num)){
+        negated = 1;
+        abs_num = rb_big_xor(num, INT2FIX(-1));
+    }else{
+        abs_num = num;
+    }
+    arr = rb_ary_new3(1, abs_num);
+    packed = rb_funcall(arr, id_pack, 1, rb_str_new2("w"));
+    StringValue(packed);
+    length = RSTRING_LEN(packed);
+    p = RSTRING_PTR(packed);
+    for(i = 0; i < length; ++i){
+        ret += POPCOUNTL(p[i] & 0x7f);
+    }
+    if(negated) ret = -ret;
+    return LL2NUM(ret);
 }
 #endif
 
@@ -89,5 +112,5 @@ Init_bit_counter(void)
   }else{
       rb_define_method(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum, 1);
   }
-  rb_define_method(rb_mCImpl, "test", bitcounter_cimpl_count_bignum, 1);
+  rb_define_method(rb_mCImpl, "count_bignum", bitcounter_cimpl_count_bignum, 1);
 }
