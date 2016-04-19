@@ -58,13 +58,17 @@ static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
         abs_num = num;
     }
     words = BIGNUM_IN_ULONG(abs_num);
-    packed = ALLOC_N(unsigned long, words);
+    if(words < ALLOCA_THRESHOLD){
+        packed = ALLOCA_N(unsigned long, words);
+    }else{
+        packed = ALLOC_N(unsigned long, words);
+    }
     BIG_PACK(abs_num, packed, words);
     for(i = 0; i < words; ++i){
         ret += POPCOUNTL(packed[i]);
     }
     if(negated) ret = -ret;
-    xfree(packed);
+    if(words >= ALLOCA_THRESHOLD) xfree(packed);
     return LL2NUM(ret);
 }
 #else
@@ -127,7 +131,11 @@ static VALUE bitcounter_cimpl_count_bignum_asm(VALUE self, VALUE num){
         abs_num = num;
     }
     words = BIGNUM_IN_ULONG(abs_num);
-    packed = ALLOC_N(unsigned long, words);
+    if(words < ALLOCA_THRESHOLD){
+        packed = ALLOCA_N(unsigned long, words);
+    }else{
+        packed = ALLOC_N(unsigned long, words);
+    }
     BIG_PACK(abs_num, packed, words);
     for(i = 0; i < words; ++i){
         ul_i = packed[i];
@@ -135,7 +143,7 @@ static VALUE bitcounter_cimpl_count_bignum_asm(VALUE self, VALUE num){
         ret += ul_o;
     }
     if(negated) ret = -ret;
-    xfree(packed);
+    if(words >= ALLOCA_THRESHOLD) xfree(packed);
     return LL2NUM(ret);
 }
 #else
