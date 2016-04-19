@@ -108,6 +108,45 @@ static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
 }
 #endif
 
+#if defined(HAVE_POPCNT_GCC_ASM) && defined(BIG_PACK)
+static VALUE bitcounter_cimpl_count_bignum_asm(VALUE self, VALUE num){
+    int negated = 0;
+    unsigned long * packed;
+    unsigned long ul_i, ul_o = 0;
+    VALUE abs_num;
+    size_t words, i;
+    LONG_LONG ret = 0;
+    if(FIXNUM_P(num)){
+        return bitcounter_cimpl_count_fixnum(self, num);
+    }
+    Check_Type(num, T_BIGNUM);
+    if(RBIGNUM_NEGATIVE_P(num)){
+        negated = 1;
+        abs_num = BIG_NEG(num);
+    }else{
+        abs_num = num;
+    }
+    words = BIGNUM_IN_ULONG(abs_num);
+    packed = ALLOC_N(unsigned long, words);
+    BIG_PACK(abs_num, packed, words);
+    for(i = 0; i < words; ++i){
+        ul_i = packed[i];
+        __asm__ volatile ("POPCNT %1, %0;": "=r"(ul_o): "r"(ul_i) : );
+        ret += ul_o;
+    }
+    if(negated) ret = -ret;
+    xfree(packed);
+    return LL2NUM(ret);
+}
+#else
+static VALUE bitcounter_cimpl_count_bignum_asm(VALUE self, VALUE num){
+    /* dummy function for C compiler, never called from Ruby */
+    return Qnil;
+}
+
+#endif
+
+
 void
 Init_bit_counter(void)
 {
@@ -119,8 +158,9 @@ Init_bit_counter(void)
   rb_define_module_function(rb_mCImpl, "cpu_popcnt?", bitcounter_cimpl_cpu_popcnt_p, 0);
   if(ASM_POPCOUNT && have_cpu_popcnt){
       rb_define_method(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum_asm, 1);
+      rb_define_method(rb_mCImpl, "count_bignum", bitcounter_cimpl_count_bignum_asm, 1);
   }else{
       rb_define_method(rb_mCImpl, "count_fixnum", bitcounter_cimpl_count_fixnum, 1);
+      rb_define_method(rb_mCImpl, "count_bignum", bitcounter_cimpl_count_bignum, 1);
   }
-  rb_define_method(rb_mCImpl, "count_bignum", bitcounter_cimpl_count_bignum, 1);
 }
