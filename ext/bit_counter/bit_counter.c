@@ -69,6 +69,7 @@ static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
     int negated = 0;
     VALUE abs_num, arr, packed;
     unsigned char * p;
+    unsigned long * lp;
     long length, i;
     LONG_LONG ret = 0;
     static ID id_pack = 0;
@@ -90,7 +91,12 @@ static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
     StringValue(packed);
     length = RSTRING_LEN(packed);
     p = RSTRING_PTR(packed);
-    for(i = 0; i < length; ++i){
+    lp = (unsigned long *) p;
+    for(i = 0; i < (length / sizeof(unsigned long)); ++i){
+        ret += POPCOUNTL(lp[i] & BER_MASK);
+    }
+    i *= sizeof(unsigned long);
+    for( ; i < length; ++i){
         ret += POPCOUNTL(p[i] & 0x7f);
     }
     if(negated) ret = -ret;

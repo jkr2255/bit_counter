@@ -38,4 +38,11 @@ static inline int POPCOUNTL(unsigned long x){
 #else
 #error Unsupported architecture
 #endif
+
+#if SIZEOF_LONG == 8
+#define BER_MASK 0x7f7f7f7f7f7f7f7fUL
+#elif SIZEOF_LONG == 4
+#define BER_MASK 0x7f7f7f7fUL
+#endif
+
 #endif
