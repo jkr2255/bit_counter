@@ -11,5 +11,12 @@
 
 #include "popcountl.h"
 #include "bignum_in_ulong.h"
+#include "big_pack.h"
+
+#ifdef HAVE_RB_BIG_XOR
+#define BIG_NEG(val) rb_big_xor(val, INT2FIX(-1))
+#else
+#define BIG_NEG(val) rb_funcall(val, rb_intern("~"), 0)
+#endif
 
 #endif /* BIT_COUNTER_H */

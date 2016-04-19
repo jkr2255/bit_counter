@@ -40,26 +40,30 @@ static VALUE bitcounter_cimpl_count_fixnum_asm(VALUE self, VALUE num){
 
 /*  for bignum */
 
-#ifdef HAVE_RB_BIG_PACK
+#ifdef BIG_PACK
 static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
     int negated = 0;
     unsigned long * packed;
+    VALUE abs_num;
     size_t words, i;
     LONG_LONG ret = 0;
     if(FIXNUM_P(num)){
         return bitcounter_cimpl_count_fixnum(self, num);
     }
     Check_Type(num, T_BIGNUM);
-    negated = RBIGNUM_NEGATIVE_P(num);
-    words = BIGNUM_IN_ULONG(num);
+    if(RBIGNUM_NEGATIVE_P(num)){
+        negated = 1;
+        abs_num = BIG_NEG(num);
+    }else{
+        abs_num = num;
+    }
+    words = BIGNUM_IN_ULONG(abs_num);
     packed = ALLOC_N(unsigned long, words);
-    rb_big_pack(num, packed, words);
+    BIG_PACK(abs_num, packed, words);
     for(i = 0; i < words; ++i){
         ret += POPCOUNTL(packed[i]);
     }
-    if(negated){
-        ret -= words * sizeof(unsigned long) * CHAR_BIT;
-    }
+    if(negated) ret = -ret;
     xfree(packed);
     return LL2NUM(ret);
 }
@@ -82,7 +86,7 @@ static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
     }
     if(RBIGNUM_NEGATIVE_P(num)){
         negated = 1;
-        abs_num = rb_big_xor(num, INT2FIX(-1));
+        abs_num = BIG_NEG(num);
     }else{
         abs_num = num;
     }
