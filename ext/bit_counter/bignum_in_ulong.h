@@ -11,7 +11,7 @@ static size_t BIGNUM_IN_ULONG(VALUE v){
         size_id = rb_intern("size");
     }
     ret_val = rb_funcall(v, size_id, 0);
-    return (NUM2SIZET(ret_val) + sizeof(size_t) - 1) / sizeof(size_t);
+    return (NUM2SIZET(ret_val) + sizeof(unsigned long) - 1) / sizeof(unsigned long);
 }
 #endif
 
