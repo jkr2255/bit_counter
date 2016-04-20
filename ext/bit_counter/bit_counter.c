@@ -39,8 +39,6 @@ static VALUE bitcounter_cimpl_count_fixnum_asm(VALUE self, VALUE num){
 #endif
 
 /*  for bignum */
-
-#ifdef BIG_PACK
 static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
     int negated = 0;
     unsigned long * packed;
@@ -71,48 +69,8 @@ static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
     if(words >= ALLOCA_THRESHOLD) xfree(packed);
     return LL2NUM(ret);
 }
-#else
-static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
-    /* as a last resort, using Array#pack */
-    int negated = 0;
-    VALUE abs_num, arr, packed;
-    unsigned char * p;
-    unsigned long * lp;
-    long length, i;
-    LONG_LONG ret = 0;
-    static ID id_pack = 0;
-    if(FIXNUM_P(num)){
-        return bitcounter_cimpl_count_fixnum(self, num);
-    }
-    Check_Type(num, T_BIGNUM);
-    if(!id_pack){
-        id_pack = rb_intern("pack");
-    }
-    if(RBIGNUM_NEGATIVE_P(num)){
-        negated = 1;
-        abs_num = BIG_NEG(num);
-    }else{
-        abs_num = num;
-    }
-    arr = rb_ary_new3(1, abs_num);
-    packed = rb_funcall(arr, id_pack, 1, rb_str_new2("w"));
-    StringValue(packed);
-    length = RSTRING_LEN(packed);
-    p = RSTRING_PTR(packed);
-    lp = (unsigned long *) p;
-    for(i = 0; i < (length / sizeof(unsigned long)); ++i){
-        ret += POPCOUNTL(lp[i] & BER_MASK);
-    }
-    i *= sizeof(unsigned long);
-    for( ; i < length; ++i){
-        ret += POPCOUNTL(p[i] & 0x7f);
-    }
-    if(negated) ret = -ret;
-    return LL2NUM(ret);
-}
-#endif
 
-#if defined(HAVE_POPCNT_GCC_ASM) && defined(BIG_PACK)
+#if defined(HAVE_POPCNT_GCC_ASM)
 static VALUE bitcounter_cimpl_count_bignum_asm(VALUE self, VALUE num){
     int negated = 0;
     unsigned long * packed;
