@@ -19,6 +19,6 @@
 #define BIG_NEG(val) rb_funcall(val, rb_intern("~"), 0)
 #endif
 
-#define ALLOCA_THRESHOLD (512 / sizeof(unsigned long))
+#define ALLOCA_THRESHOLD (8192 / sizeof(unsigned long))
 
 #endif /* BIT_COUNTER_H */
