@@ -1,7 +1,6 @@
 require "mkmf"
 
 have_func('__builtin_popcountl(1)')
-have_func('__builtin_popcountll(1)')
 have_func('rb_absint_numwords')
 have_func('rb_big_pack')
 have_func('rb_integer_pack')
