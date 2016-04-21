@@ -6,8 +6,12 @@ def count_string(num)
   num.to_s(2).count '1'
 end
 
-$slicing_bits = 1.size * 8 - 1
-$slice_mask = (1 << $slicing_bits) - 1
+$table = 128.times.map { |i| BitCounter.count(i) }
+
+def count_from_pack(num)
+  return -count_string(~num) if num < 0
+  [num].pack('w').chars.reduce(0) { |cnt, c| cnt + $table[c.ord & 0x7f] }
+end
 
 
 value = 7**100000
@@ -21,6 +25,11 @@ Benchmark.bm 10 do |r|
   r.report "String" do
     count.times do
       count_string(value)
+    end
+  end
+  r.report "Pack" do
+    count.times do
+      count_from_pack(value)
     end
   end
   r.report "C" do
@@ -41,6 +50,11 @@ Benchmark.bm 10 do |r|
   r.report "String" do
     count.times do
       count_string(value)
+    end
+  end
+  r.report "Pack" do
+    count.times do
+      count_from_pack(value)
     end
   end
   r.report "C" do

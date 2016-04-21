@@ -6,7 +6,7 @@ def count_string(num)
   num.to_s(2).count '1'
 end
 
-def count_arithmeric_32(x)
+def count_arithmetic_32(x)
   return -count_string(~x) if x < 0
   m1 = 0x55555555
   m2 = 0x33333333
@@ -18,7 +18,17 @@ def count_arithmeric_32(x)
   (x + (x >> 16)) & 0x3f
 end
 
-value = 0xFEDC_BA98
+def count_bit_loop(x)
+  return -count_string(~x) if x < 0
+  ret = 0
+  while x > 0
+    ret += 1
+    x &= x - 1
+  end
+  ret
+end
+
+value = 0x3EDC_BA98
 count = 10_000_000
 
 Benchmark.bm 10 do |r|
@@ -27,9 +37,14 @@ Benchmark.bm 10 do |r|
       count_string(value)
     end
   end
-  r.report "Arithmeric" do
+  r.report "Arithmetic" do
     count.times do
-      count_arithmeric_32(value)
+      count_arithmetic_32(value)
+    end
+  end
+  r.report "Loop" do
+    count.times do
+      count_bit_loop(value)
     end
   end
   r.report "Native" do
