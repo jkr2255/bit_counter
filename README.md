@@ -61,6 +61,34 @@ This gem is mainly developed on x64 GCC environment, so in other environments it
 
 Pull requests for other environments are welcome.
 
+## Benchmark
+Compared to `num.to_s(2).count('1')` (popular method for popcount in CRuby), this gem is 5x - 20x faster.
+
+```
+# for fixnum
+                 user     system      total        real
+String       7.770000   0.000000   7.770000 (  7.771210)
+Arithmetic   4.950000   0.000000   4.950000 (  4.953082)
+Loop         9.860000   0.000000   9.860000 (  9.863400)
+Gem          0.610000   0.000000   0.610000 (  0.612627)
+
+# for bignum
+for 280736 bits, 1000 times
+                 user     system      total        real
+String       1.470000   0.030000   1.500000 (  1.491823)
+Pack         8.810000   0.000000   8.810000 (  8.823835)
+Gem          0.040000   0.000000   0.040000 (  0.032927)
+
+for 80 bits, 1000000 times
+                 user     system      total        real
+String       0.820000   0.000000   0.820000 (  0.827302)
+Pack         3.860000   0.000000   3.860000 (  3.869715)
+Gem          0.160000   0.000000   0.160000 (  0.150728)
+
+```
+
+(Done in Core i3 (with POPCNT instruction), Linux x64, Ruby 2.3.0)
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/jkr2255/bit_counter.
