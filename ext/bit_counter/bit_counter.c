@@ -70,7 +70,47 @@ static VALUE bitcounter_cimpl_count_bignum(VALUE self, VALUE num){
     return LL2NUM(ret);
 }
 
-#if defined(HAVE_POPCNT_GCC_ASM)
+#if defined(HAVE_POPCNT_LL_GCC_ASM) && (SIZEOF_LONG_LONG == SIZEOF_LONG * 2)
+/* for Windows */
+static VALUE bitcounter_cimpl_count_bignum_asm(VALUE self, VALUE num){
+    int negated = 0;
+    unsigned long * packed;
+    unsigned long long * ull_packed;
+    unsigned long long ull_i, ull_o = 0;
+    VALUE abs_num;
+    size_t words, i, ull_words;
+    LONG_LONG ret = 0;
+    if(FIXNUM_P(num)){
+        return bitcounter_cimpl_count_fixnum(self, num);
+    }
+    Check_Type(num, T_BIGNUM);
+    if(RBIGNUM_NEGATIVE_P(num)){
+        negated = 1;
+        abs_num = BIG_NEG(num);
+    }else{
+        abs_num = num;
+    }
+    words = BIGNUM_IN_ULONG(abs_num);
+    if(words < ALLOCA_THRESHOLD){
+        packed = ALLOCA_N(unsigned long, words);
+    }else{
+        packed = ALLOC_N(unsigned long, words);
+    }
+    BIG_PACK(abs_num, packed, words);
+    ull_words = words / 2;
+    ull_packed = (unsigned long long *) packed;
+    for(i = 0; i < ull_words; ++i){
+        ull_i = ull_packed[i];
+        __asm__ volatile ("POPCNT %1, %0;": "=r"(ull_o): "r"(ull_i) : );
+        ret += ull_o;
+    }
+    if(words & 1) ret += POPCOUNTL(packed[words-1]);
+    if(negated) ret = -ret;
+    if(words >= ALLOCA_THRESHOLD) xfree(packed);
+    return LL2NUM(ret);
+}
+
+#elif defined(HAVE_POPCNT_GCC_ASM)
 static VALUE bitcounter_cimpl_count_bignum_asm(VALUE self, VALUE num){
     int negated = 0;
     unsigned long * packed;
