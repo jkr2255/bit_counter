@@ -1,5 +1,8 @@
 # BitCounter
 
+[![Build Status](https://travis-ci.org/jkr2255/bit_counter.svg?branch=master)](https://travis-ci.org/jkr2255/bit_counter)
+[![Gem Version](https://badge.fury.io/rb/bit_counter.svg)](https://badge.fury.io/rb/bit_counter)
+
 Counting bits (popcount, Hamming weight) in integer, made faster.
 
 ## Installation
