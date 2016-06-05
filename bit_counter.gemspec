@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["Jkr2255"]
   spec.email         = ["magnesium.oxide.play@gmail.com"]
 
-  spec.summary       = %q{Calculate bit count (popcount, Hamming weight) faster in many environments.}
+  spec.summary       = %q{Calculate bit count (popcount, Hamming weight) faster in many environments (deprecated).}
   spec.homepage      = "https://github.com/jkr2255/bit_counter"
   spec.license       = "MIT"
 
@@ -17,14 +17,9 @@ Gem::Specification.new do |spec|
   spec.bindir        = "exe"
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
-if RUBY_PLATFORM =~ /java/
-  spec.platform      = 'java'
-else
-  spec.extensions    = ["ext/bit_counter/extconf.rb"]
-end
+  spec.add_dependency 'bit_utils', '>= 0.1.1'
 
   spec.add_development_dependency "bundler", "~> 1.11"
   spec.add_development_dependency "rake", "~> 10.0"
-  spec.add_development_dependency "rake-compiler"
   spec.add_development_dependency "rspec", "~> 3.0"
 end

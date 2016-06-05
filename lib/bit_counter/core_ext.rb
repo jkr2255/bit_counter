@@ -1,21 +1,15 @@
-require 'bit_counter'
+require 'bit_utils'
 
 # :nodoc:
 class Fixnum
-  #
-  # calling BitCounter.#count with self
-  #
   def bit_count
-    BitCounter.count_fixnum(self)
+    BitUtils.popcount_fixnum(self)
   end
 end
 
 # :nodoc:
 class Bignum
-  #
-  # calling BitCounter.#count with self
-  #
   def bit_count
-    BitCounter.count_bignum(self)
+    BitUtils.popcount_bignum(self)
   end
 end
